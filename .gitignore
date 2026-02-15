@@ -1,0 +1,4 @@
+node_modules/
+.env
+scam_detection.db
+README.txt

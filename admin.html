@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - AI Scam Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== Stats Section ===== */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .stat-card h3 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        .stat-card p {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        /* ===== Chart Section ===== */
+        .chart-container {
+            width: 400px;
+            height: 300px;
+            margin: 0 auto 20px auto;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        /* ===== Search ===== */
+        .search-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .search-container input {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            width: 250px;
+        }
+
+        /* ===== Table ===== */
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .report-table th {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .report-table td {
+            padding: 12px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        .report-table tr:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .high { color: #ff4c4c; font-weight: bold; }
+        .medium { color: #ffa500; font-weight: bold; }
+        .low { color: #4cff88; font-weight: bold; }
+
+        @media(max-width: 768px) {
+            body { padding: 20px; }
+            .chart-container { width: 100%; height: 300px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🚨 Admin Dashboard - AI Scam Detection</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3 id="totalReports">0</h3>
+        <p>Total Reports</p>
+    </div>
+    <div class="stat-card">
+        <h3 id="highRisk">0</h3>
+        <p>High Risk Reports</p>
+    </div>
+    <div class="stat-card">
+        <h3 id="lowRisk">0</h3>
+        <p>Low Risk Reports</p>
+    </div>
+</div>
+
+<div class="chart-container">
+    <canvas id="riskChart"></canvas>
+</div>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search in table..." onkeyup="filterTable()">
+</div>
+
+<button onclick="downloadPDF()" style="margin-bottom: 15px; padding: 10px 20px; background: #ff4c4c; border: none; color: white; border-radius: 5px; cursor: pointer;">
+    Download PDF
+</button>
+
+
+
+<h2>All Reports</h2>
+
+<table class="report-table" id="reportTable">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">ID</th>
+            <th onclick="sortTable(1)">Text</th>
+            <th onclick="sortTable(2)">Amount</th>
+            <th onclick="sortTable(3)">Risk Score</th>
+            <th onclick="sortTable(4)">Risk Level</th>
+            <th onclick="sortTable(5)">Verdict</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function animateValue(id, end, duration = 1000) {
+    let start = 0;
+    const increment = end / (duration / 16);
+    const obj = document.getElementById(id);
+
+    function update() {
+        start += increment;
+        if (start < end) {
+            obj.innerText = Math.floor(start);
+            requestAnimationFrame(update);
+        } else {
+            obj.innerText = end;
+        }
+    }
+    update();
+}
+
+async function loadAdminData() {
+    try {
+        const response = await fetch("http://localhost:5000/api/reports");
+        const data = await response.json();
+        console.log("API DATA:", data);
+
+        const total = data.length;
+        const high = data.filter(r => r.risk_score > 40).length;
+        const medium = data.filter(r => r.risk_score > 20 && r.risk_score <= 40).length;
+        const low = data.filter(r => r.risk_score <= 20).length;
+
+        animateValue("totalReports", total);
+        animateValue("highRisk", high);
+        animateValue("lowRisk", low);
+
+        const ctx = document.getElementById('riskChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                datasets: [{
+                    data: [high, medium, low],
+                    backgroundColor: ['#ff4c4c', '#ffa500', '#4cff88'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: "white" }
+                    }
+                }
+            }
+        });
+
+        const tbody = document.querySelector("#reportTable tbody");
+        tbody.innerHTML = '';
+
+       data.forEach(r => {
+    // Determine class for coloring
+    let verdictClass = r.risk_score < 20 ? 'low' :
+                       r.risk_score <= 40 ? 'medium' : 'high';
+    
+    // Determine the displayed text
+    let verdictText = r.risk_score < 20 ? 'Low' :
+                      r.risk_score <= 40 ? 'Medium' : 'High';
+
+    // Risk Score coloring
+    let riskClass = verdictClass;
+
+    tbody.innerHTML += `
+        <tr>
+            <td>${r.id}</td>
+            <td>${r.raw_text}</td>
+            <td>${r.amount || 'N/A'}</td>
+            <td class="${riskClass}">${r.risk_score}</td>
+            <td>${verdictText}</td>
+            <td class="${verdictClass}">${verdictText}</td>
+        </tr>
+    `;
+});
+
+    } catch (error) {
+        console.error(error);
+        alert("Backend not running on http://localhost:5000");
+    }
+}
+
+// ===== Table Sorting =====
+function sortTable(n) {
+    const table = document.getElementById("reportTable");
+    let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    switching = true;
+    dir = "asc"; 
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+
+            let xContent = x.innerText;
+            let yContent = y.innerText;
+
+            // Check if column is numeric
+            if (!isNaN(parseFloat(xContent)) && !isNaN(parseFloat(yContent))) {
+                xContent = parseFloat(xContent);
+                yContent = parseFloat(yContent);
+            } else {
+                xContent = xContent.toLowerCase();
+                yContent = yContent.toLowerCase();
+            }
+
+            if (dir == "asc") {
+                if (xContent > yContent) {
+                    shouldSwitch = true; break;
+                }
+            } else if (dir == "desc") {
+                if (xContent < yContent) {
+                    shouldSwitch = true; break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount++;
+        } else if (switchcount === 0 && dir === "asc") {
+            dir = "desc"; switching = true;
+        }
+    }
+}
+
+/////   dowbload pdf    //////////
+
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Get table headers
+    const headers = [["ID", "Text", "Amount", "Risk Score", "Risk Level", "Verdict"]];
+
+    // Get table data
+    const table = document.getElementById("reportTable");
+    const rows = [];
+    for (let i = 1; i < table.rows.length; i++) {
+        const tr = table.rows[i];
+        const row = [];
+        for (let j = 0; j < tr.cells.length; j++) {
+            row.push(tr.cells[j].innerText);
+        }
+        rows.push(row);
+    }
+
+    doc.autoTable({
+        head: headers,
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 76, 153] }, // dark blue header
+        startY: 20,
+    });
+
+    doc.save('AI_Scam_Reports.pdf');
+}
+
+
+
+// ===== Table Search Filter =====
+function filterTable() {
+    const input = document.getElementById("searchInput");
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("reportTable");
+    const tr = table.getElementsByTagName("tr");
+    for (let i = 1; i < tr.length; i++) {
+        let tdArray = tr[i].getElementsByTagName("td");
+        let show = false;
+        for (let j = 0; j < tdArray.length; j++) {
+            if (tdArray[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                show = true; break;
+            }
+        }
+        tr[i].style.display = show ? "" : "none";
+    }
+}
+
+window.onload = loadAdminData;
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+
+</body>
+</html>

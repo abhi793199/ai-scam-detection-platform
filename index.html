@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Scam Detection Platform</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            font-size: 15px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        textarea::placeholder,
+        input::placeholder {
+            color: #ccc;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        .analyze-btn {
+            background: #4cff88;
+            color: black;
+        }
+
+        .report-btn {
+            background: #00c6ff;
+            color: black;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 15px;
+            backdrop-filter: blur(8px);
+        }
+
+        .report-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .high { color: #ff4c4c; font-weight: bold; }
+        .medium { color: #ffa500; font-weight: bold; }
+        .low { color: #4cff88; font-weight: bold; }
+
+    </style>
+</head>
+
+<body>
+
+<h1>🚨 AI Digital Scam Detection</h1>
+
+<div class="container">
+
+    <textarea id="text" placeholder="Paste suspicious message here..."></textarea>
+    <input type="number" id="amount" placeholder="Amount involved (optional)">
+
+    <div class="buttons">
+        <button class="analyze-btn" onclick="analyze()">Analyze</button>
+        <button class="report-btn" onclick="loadReports()">View All Reports</button>
+    </div>
+
+    <div class="result" id="result"></div>
+
+</div>
+
+<script>
+
+async function analyze() {
+    const text = document.getElementById("text").value;
+    const amount = document.getElementById("amount").value;
+
+    if (!text) {
+        alert("Please enter some text to analyze!");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/api/reports", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, amount })
+        });
+
+        const data = await response.json();
+
+        let riskClass = "low";
+
+        if (data.risk_level) {
+            const level = data.risk_level.toLowerCase().trim();
+
+            if (level.includes("high")) riskClass = "high";
+            else if (level.includes("medium")) riskClass = "medium";
+            else riskClass = "low";
+        }
+
+        document.getElementById("result").innerHTML = `
+            <h3>Analysis Result</h3>
+
+            <p><strong>Risk Score :</strong> 
+                <span class="${riskClass}" style="font-size:22px;">
+                    ${data.risk_score}
+                </span>
+            </p>
+
+            <p><strong>Risk Level :</strong> 
+                <span class="${riskClass}">
+                    ${data.risk_level}
+                </span>
+            </p>
+
+            <p><strong>Report ID :</strong> ${data.id}</p>
+
+            <h4>Verdict :
+            <span class="${riskClass}" style="font-size:18px;">
+                ${data.verdict}
+            </span> </h4>
+        `;
+
+    } catch (error) {
+        console.error(error);
+        alert("Failed to analyze text. Check backend server.");
+    }
+}
+
+
+async function loadReports() {
+    try {
+        const response = await fetch("http://localhost:5000/api/reports");
+        const data = await response.json();
+
+        if (data.length === 0) {
+            document.getElementById("result").innerHTML = "<p>No reports found.</p>";
+            return;
+        }
+
+        let html = "<h3>All Reports</h3>";
+
+        data.forEach(r => {
+
+            let riskClass = "low";
+
+            if (r.risk_level) {
+                const level = r.risk_level.toLowerCase().trim();
+
+                if (level.includes("high")) riskClass = "high";
+                else if (level.includes("medium")) riskClass = "medium";
+                else riskClass = "low";
+            }
+
+            html += `
+                <div class="report-item">
+                    <strong>ID:</strong> ${r.id} |
+                    <strong>Score:</strong> 
+                        <span class="${riskClass}">${r.risk_score}</span> |
+                    <strong>Level:</strong> 
+                        <span class="${riskClass}">${r.risk_level}</span> |
+                    <strong>Amount:</strong> ${r.amount || "N/A"} |
+                    <strong>Verdict:</strong> 
+                        <span class="${riskClass}">
+                            ${r.verdict || "N/A"}
+                        </span>
+                </div>
+            `;
+        });
+
+        document.getElementById("result").innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        alert("Failed to load reports. Check backend server.");
+    }
+}
+
+</script>
+
+</body>
+</html>
