@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login - AI Scam Detection</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .login-container {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ff4c4c;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff1a1a;
+        }
+
+        .error {
+            margin-top: 10px;
+            color: #ff4c4c;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+    <h2>🔐 Admin Login</h2>
+
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+
+    <button onclick="login()">Login</button>
+
+    <div class="error" id="errorMsg"></div>
+</div>
+
+<script>
+function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    // 🔑 Hardcoded credentials (Change if needed)
+    const adminUser = "admin";
+    const adminPass = "admin@1234";
+
+    if (username === adminUser && password === adminPass) {
+        // Save login state
+        localStorage.setItem("isAdminLoggedIn", "true");
+
+        // Redirect to admin dashboard
+        window.location.href = "admin.html";
+    } else {
+        document.getElementById("errorMsg").innerText = "Invalid Username or Password!";
+    }
+}
+</script>
+
+</body>
+</html>

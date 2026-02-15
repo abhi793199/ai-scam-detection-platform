@@ -127,8 +127,25 @@
 </head>
 
 <body>
+    <script>
+if (localStorage.getItem("isAdminLoggedIn") !== "true") {
+    window.location.href = "admin-login.html";
+}
+</script>
+
 
 <h1>🚨 Admin Dashboard - AI Scam Detection</h1>
+
+<div style="text-align:right; margin-bottom:20px;">
+    <button onclick="logout()" 
+        style="padding:8px 15px; background:#ff4c4c; border:none; 
+               color:white; border-radius:5px; cursor:pointer;">
+        Logout
+    </button>
+</div>
+
+
+
 
 <div class="stats">
     <div class="stat-card">
@@ -176,6 +193,20 @@
 </table>
 
 <script>
+    
+if (localStorage.getItem("isAdminLoggedIn") !== "true") {
+    window.location.href = "admin-login.html";
+}
+
+function logout() {
+    localStorage.removeItem("isAdminLoggedIn");
+    window.location.href = "admin-login.html";
+}
+
+
+
+
+
 function animateValue(id, end, duration = 1000) {
     let start = 0;
     const increment = end / (duration / 16);

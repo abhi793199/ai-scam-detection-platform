@@ -104,6 +104,15 @@
 
 <h1>🚨 AI Digital Scam Detection</h1>
 
+<div style="text-align:right; margin-bottom:20px;">
+    <button onclick="goToAdmin()" 
+        style="padding:8px 15px; background:#ff4c4c; border:none; 
+               color:white; border-radius:5px; cursor:pointer;">
+        Admin Login
+    </button>
+</div>
+
+
 <div class="container">
 
     <textarea id="text" placeholder="Paste suspicious message here..."></textarea>
@@ -119,6 +128,11 @@
 </div>
 
 <script>
+
+    function goToAdmin() {
+    window.location.href = "admin-login.html";
+}
+
 
 async function analyze() {
     const text = document.getElementById("text").value;
