@@ -3,6 +3,7 @@ const keywords = [
     { word: "verify", weight: 8 },
     { word: "otp", weight: 15 },
     { word: "click now", weight: 12 }
+    { word: "password", weight: 15 }
 ];
 
 function analyze(text) {
