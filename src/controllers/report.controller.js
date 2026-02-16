@@ -1,11 +1,5 @@
 const engine = require('../engine/engine.core');
 const reportService = require('../services/report.service');
-// const { createReport } = require("../controllers/report.controller");
-// const { createReport, getReports } = require("../controllers/report.controller");
-
-
-// const engine = require('../engine/engine.core');
-// const result = await engine.analyze(text, amount || 0);
 
 async function createReport(req, res) {
 
@@ -62,15 +56,6 @@ async function getReports(req, res) {
 }
 
 
-// async function getReports(req, res) {
-//   try {
-//     const [rows] = await db.query("SELECT * FROM reports ORDER BY created_at DESC");
-//     res.json(rows);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to fetch reports" });
-//   }
-// }
 
 
 module.exports = { createReport, getReports };

@@ -2,7 +2,8 @@ const keywords = [
     { word: "urgent", weight: 10 },
     { word: "verify", weight: 8 },
     { word: "otp", weight: 15 },
-    { word: "click now", weight: 12 }
+    { word: "click now", weight: 12 },
+    { word: "jackpot", weight: 20 },
     { word: "password", weight: 15 }
 ];
 

@@ -2,8 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
-// const cors = require("cors");
-// app.use(cors());
+
 
 
 const app = express();
